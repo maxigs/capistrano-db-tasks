@@ -56,6 +56,11 @@ module Database
       end
     end
 
+    def upload
+      remote_file = "#{@cap.current_path}/#{output_file}"
+      @cap.upload! output_file, remote_file
+    end
+
     private
 
     def pgpass
@@ -184,11 +189,6 @@ module Database
       self
     end
 
-    def upload
-      remote_file = "#{@cap.current_path}/#{output_file}"
-      @cap.upload! output_file, remote_file
-    end
-
     private
 
     def execute(cmd)
@@ -216,6 +216,17 @@ module Database
       ensure
         remote_db.clean_dump_if_needed
       end
+    end
+
+    def upload_to_remote(instance)
+      remote_db = Database::Remote.new(instance)
+      remote_db.output_file = 'download' + remote_db.output_file.gsub(/^([^.]+)/, '')
+
+      check(remote_db)
+
+      remote_db.upload
+
+      remote_db.load(remote_db.output_file, false)
     end
 
     def remote_to_local(instance)

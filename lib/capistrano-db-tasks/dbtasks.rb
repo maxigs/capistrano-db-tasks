@@ -51,10 +51,19 @@ namespace :db do
   desc 'Synchronize your remote database using local database data'
   task :push => "db:remote:sync"
 
-  desc 'Synchronize your remote database using local database data'
+  desc 'Download the remote database data'
   task :download do
     on roles(:db) do
       Database.download_remote(self)
+    end
+  end
+  
+  desc 'Upload a local database file to remote'
+  task :upload do
+    on roles(:db) do
+      if fetch(:skip_data_sync_confirm) || Util.prompt('Are you sure you want to REPLACE THE REMOTE DATABASE with local database file')
+        Database.upload_to_remote(self)
+      end
     end
   end
 end
