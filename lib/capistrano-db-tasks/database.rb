@@ -199,8 +199,23 @@ module Database
   end
 
   class << self
-    def check(local_db, remote_db)
-      raise 'Only mysql or postgresql on remote and local server is supported' unless (local_db.mysql? && remote_db.mysql?) || (local_db.postgresql? && remote_db.postgresql?)
+    def check(*dbs)
+      if dbs.reject { |db| db.mysql? || db.postgresql? }.any?
+        raise 'Only mysql or postgresql on remote and local server is supported'
+      end
+    end
+
+    def download_remote(instance)
+      remote_db = Database::Remote.new(instance)
+      path = File.join(Dir.getwd, 'download' + remote_db.output_file.gsub(/^([^.]+)/, ''))
+
+      check(remote_db)
+
+      begin
+        remote_db.dump.download(path)
+      ensure
+        remote_db.clean_dump_if_needed
+      end
     end
 
     def remote_to_local(instance)

@@ -50,6 +50,13 @@ namespace :db do
 
   desc 'Synchronize your remote database using local database data'
   task :push => "db:remote:sync"
+
+  desc 'Synchronize your remote database using local database data'
+  task :download do
+    on roles(:db) do
+      Database.download_remote(self)
+    end
+  end
 end
 
 namespace :assets do
